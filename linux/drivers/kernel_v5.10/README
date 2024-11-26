@@ -1,0 +1,40 @@
+## Modification of Kconfig
+Add the following sections to the original Kconfig file:
+
+
+config VIDEO_DS90UB954
+       tristate "TI FDPLINK III support."
+       depends on I2C && VIDEO_V4L2 && VIDEO_V4L2_SUBDEV_API
+       help
+            Driver for TI FDPLINK III .
+
+config VIDEO_VEYECAM2M
+       tristate "VEYE 2M camera support."
+       depends on I2C && VIDEO_V4L2 && VIDEO_V4L2_SUBDEV_API
+       depends on MEDIA_CAMERA_SUPPORT
+       help
+               Driver for veye 2m camera.
+               
+config VIDEO_VEYEMVCAM
+       tristate "VEYE MV series camera support."
+       depends on I2C && VIDEO_V4L2 && VIDEO_V4L2_SUBDEV_API
+       depends on MEDIA_CAMERA_SUPPORT
+       help
+               Driver for veye mv series camera.
+
+config VIDEO_VEYEVBYONE
+       tristate "VEYE V-by-One hs toolkit support."
+       depends on I2C && VIDEO_V4L2 && VIDEO_V4L2_SUBDEV_API
+       depends on MEDIA_CAMERA_SUPPORT
+       help
+               Driver for vV-by-One hs toolkit .
+                              
+
+
+## Modification of the Makefile
+Add the following section to the original Makefile file:
+
+obj-$(CONFIG_VIDEO_DS90UB954) += ds90ub954.o
+obj-$(CONFIG_VIDEO_VEYEVBYONE) += veye_vbyone.o
+obj-$(CONFIG_VIDEO_VEYECAM2M) += veyecam2m.o
+obj-$(CONFIG_VIDEO_VEYEMVCAM) += veye_mvcam.o

@@ -1,0 +1,22 @@
+## Modification of Kconfig
+Add the following sections to the original Kconfig file:
+
+        
+config VIDEO_VEYECAM2M
+	tristate "veye 2m pixel camera support."
+	depends on VIDEO_V4L2 && I2C
+	help
+		Driver for veyecam camera.
+
+config VIDEO_VEYEMVCAM
+	tristate "veye mv and raw series camera support."
+	depends on VIDEO_V4L2 && I2C
+	help
+		Driver for veye mvcam camera.
+
+
+## Changes to the Makefile
+Add the following section to the original Makefile file:
+
+obj-$(CONFIG_VIDEO_VEYECAM2M) += veyecam2m.o
+obj-$(VIDEO_VEYEMVCAM) += veye_mvcam.o
