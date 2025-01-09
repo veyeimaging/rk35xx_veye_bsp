@@ -377,9 +377,9 @@ static int veyecam2m_enum_frame_sizes(struct v4l2_subdev *sd,
     VEYE_TRACE
 	if (fse->index >= ARRAY_SIZE(supported_modes))
 		return -EINVAL;
-
-	if (fse->code != VEYECAM2M_MEDIA_BUS_FMT/*MEDIA_BUS_FMT_UYVY8_2X8*/)
-		return -EINVAL;
+    //we want to make rk capture.c happy,it do not pass the correct code to me sometimes, which cause -22 error.
+	//if (fse->code != VEYECAM2M_MEDIA_BUS_FMT/*MEDIA_BUS_FMT_UYVY8_2X8*/)
+	//	return -EINVAL;
 
 	fse->min_width  = supported_modes[fse->index].width;
 	fse->max_width  = supported_modes[fse->index].width;
@@ -403,7 +403,7 @@ static int veyecam2m_g_frame_interval(struct v4l2_subdev *sd,
 
 //#define veyecam2m_LANES 2
 //Please note that depending on the kernel version differences, this function may need to be either disabled or enabled.
-/*static int veyecam2m_g_mbus_config(struct v4l2_subdev *sd,
+static int veyecam2m_g_mbus_config(struct v4l2_subdev *sd,
                                  struct v4l2_mbus_config *config)
 {
         u32 val = 0;
@@ -420,7 +420,7 @@ static int veyecam2m_g_frame_interval(struct v4l2_subdev *sd,
         config->flags = val;
 
         return 0;
-}*/
+}
 
 static void veyecam2m_get_module_inf(struct veyecam2m *veyecam2m,
 				   struct rkmodule_inf *inf)
@@ -840,8 +840,8 @@ static int veyecam2m_enum_frame_interval(struct v4l2_subdev *sd,
 	if (fie->index >= ARRAY_SIZE(supported_modes))
 		return -EINVAL;
 
-	if (fie->code != VEYECAM2M_MEDIA_BUS_FMT)
-		return -EINVAL;
+	//if (fie->code != VEYECAM2M_MEDIA_BUS_FMT)
+		//return -EINVAL;
 
 	fie->width = supported_modes[fie->index].width;
 	fie->height = supported_modes[fie->index].height;
@@ -895,7 +895,7 @@ static const struct v4l2_subdev_core_ops veyecam2m_core_ops = {
 static const struct v4l2_subdev_video_ops veyecam2m_video_ops = {
 	.s_stream = veyecam2m_s_stream,
 	.g_frame_interval = veyecam2m_g_frame_interval,
-	//.g_mbus_config = veyecam2m_g_mbus_config,
+	.g_mbus_config = veyecam2m_g_mbus_config,
 };
 
 static const struct v4l2_subdev_pad_ops veyecam2m_pad_ops = {
@@ -1035,6 +1035,9 @@ static int veyecam2m_probe(struct i2c_client *client,
 	if (!veyecam2m)
 		return -ENOMEM;
 
+	sd = &veyecam2m->subdev;    //added by wxiaowei 
+	v4l2_i2c_subdev_init(sd, client, &veyecam2m_subdev_ops); //added by wxiaowei 
+
 	ret = of_property_read_u32(node, RKMODULE_CAMERA_MODULE_INDEX,
 				   &veyecam2m->module_index);
 	ret |= of_property_read_string(node, RKMODULE_CAMERA_MODULE_FACING,
@@ -1120,8 +1123,8 @@ static int veyecam2m_probe(struct i2c_client *client,
 
 	mutex_init(&veyecam2m->mutex);
 
-	sd = &veyecam2m->subdev;
-	v4l2_i2c_subdev_init(sd, client, &veyecam2m_subdev_ops);
+//	sd = &veyecam2m->subdev;    rm by wxiaowei 
+//	v4l2_i2c_subdev_init(sd, client, &veyecam2m_subdev_ops); rm by wxiaowei 
 	ret = veyecam2m_initialize_controls(veyecam2m);
 	if (ret)
 		goto err_destroy_mutex;
