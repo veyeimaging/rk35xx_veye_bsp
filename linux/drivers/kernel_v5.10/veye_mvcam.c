@@ -30,6 +30,9 @@
 #include <linux/of_gpio.h>
 
 /*
+v1.0.7
+1. Modify mvcam_get_selection to make rkcif_sync_crop_info happy in case roi_x or roi_y is not zero.
+
 v1.01.06
 1. Add a generic model reading function，
  so that the driver does not need to be updated every time a new product is developed.
@@ -713,7 +716,10 @@ VEYE_TRACE
 	case V4L2_SEL_TGT_CROP: {
     		//sel->r = *__mvcam_get_pad_crop(mvcam, cfg, sel->pad,
     		//				sel->which);
-            sel->r = mvcam->roi;
+            sel->r.top = 0;
+            sel->r.left = 0;
+            sel->r.width = mvcam->roi.width;
+            sel->r.height = mvcam->roi.height;
     		break;
     	}
     //active area
