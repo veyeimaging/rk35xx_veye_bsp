@@ -50,7 +50,7 @@ add support for RAW_MIPI_IMX462M and RAW_MIPI_AR0234M
 
 */
 
-#define DRIVER_VERSION			KERNEL_VERSION(1, 0x01, 0x06) 
+#define DRIVER_VERSION			KERNEL_VERSION(1, 0x01, 0x07) 
 
 
 #define mvcam_NAME			"mvcam"
