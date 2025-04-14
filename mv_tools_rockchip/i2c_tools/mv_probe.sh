@@ -20,6 +20,9 @@ for i2c_device in /sys/bus/i2c/devices/i2c-*; do
                 # Check if the veye_mvcam directory exists
                 if [ -d "$sub_device/veye_mvcam" ]; then
                     echo "Found veye_mvcam camera on $i2c_bus."
+                    bus_num=${i2c_bus#*-}
+                    export I2C_BUS="$bus_num"
+                    echo "Setenv I2C_BUS = $bus_num"
                     # Read and set the contents of the files as environment variables
                     #echo "Reading files in $sub_device/veye_mvcam:"
                     for file in camera_model fps width height; do
