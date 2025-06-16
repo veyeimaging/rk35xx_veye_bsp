@@ -32,6 +32,8 @@
 /*
 Note: for kernel 6.1
     mvcam_get_selection is not necessary.
+v1.0.8
+1. Fix bug: Corrected erroneous model names for some RAW cameras in sysfs.
     
 v1.0.7
 1. Modify mvcam_get_selection to make rkcif_sync_crop_info happy in case roi_x or roi_y is not zero.
@@ -53,7 +55,7 @@ add support for RAW_MIPI_IMX462M and RAW_MIPI_AR0234M
 
 */
 
-#define DRIVER_VERSION			KERNEL_VERSION(1, 0x01, 0x07) 
+#define DRIVER_VERSION			KERNEL_VERSION(1, 0x01, 0x08) 
 
 
 #define mvcam_NAME			"mvcam"
@@ -1468,14 +1470,14 @@ static int mvcam_identify_module(struct mvcam * mvcam)
         case RAW_MIPI_SC132M:
             mvcam->model_id = device_id;
             dev_info(&client->dev, "camera is: RAW-MIPI-SC132M\n");
-			snprintf(mvcam->camera_model, sizeof(mvcam->camera_model), "%s", "MV-MIPI-SC132M");
+			snprintf(mvcam->camera_model, sizeof(mvcam->camera_model), "%s", "RAW-MIPI-SC132M");
 			mvcam->min_width = RAW_SC132M_ROI_W_MIN;
 			mvcam->min_height = RAW_SC132M_ROI_H_MIN;
 			mvcam->lanecap = 0x2;//2lane
             break;
         case MV_MIPI_IMX287M:
             mvcam->model_id = device_id;
-            dev_info(&client->dev, "camera is: MV_MIPI_IMX287M\n");
+            dev_info(&client->dev, "camera is: MV-MIPI-IMX287M\n");
 			snprintf(mvcam->camera_model, sizeof(mvcam->camera_model), "%s", "MV-MIPI-IMX287M");
 			mvcam->min_width = MV_IMX287M_ROI_W_MIN;
 			mvcam->min_height = MV_IMX287M_ROI_H_MIN;
@@ -1483,16 +1485,16 @@ static int mvcam_identify_module(struct mvcam * mvcam)
             break;
         case RAW_MIPI_IMX462M:
             mvcam->model_id = device_id;
-            dev_info(&client->dev, "camera is: RAW_MIPI_IMX462M\n");
-			snprintf(mvcam->camera_model, sizeof(mvcam->camera_model), "%s", "MV-MIPI-IMX462M");
+            dev_info(&client->dev, "camera is: RAW-MIPI-IMX462M\n");
+			snprintf(mvcam->camera_model, sizeof(mvcam->camera_model), "%s", "RAW-MIPI-IMX462M");
 			mvcam->min_width = RAW_IMX462M_ROI_W_MIN;
 			mvcam->min_height = RAW_IMX462M_ROI_H_MIN;
 			mvcam->lanecap = 0xA;//2lane and 4lane
             break;
         case RAW_MIPI_AR0234M:
             mvcam->model_id = device_id;
-            dev_info(&client->dev, "camera is: RAW_MIPI_AR0234M\n");
-			snprintf(mvcam->camera_model, sizeof(mvcam->camera_model), "%s", "MV-MIPI-AR0234M");
+            dev_info(&client->dev, "camera is: RAW-MIPI-AR0234M\n");
+			snprintf(mvcam->camera_model, sizeof(mvcam->camera_model), "%s", "RAW-MIPI-AR0234M");
 			mvcam->min_width = RAW_AR0234M_ROI_W_MIN;
 			mvcam->min_height = RAW_AR0234M_ROI_H_MIN;
 			mvcam->lanecap = 0xA;//2lane and 4lane
@@ -1500,7 +1502,7 @@ static int mvcam_identify_module(struct mvcam * mvcam)
         case RAW_MIPI_SC535M:
             mvcam->model_id = device_id;
             dev_info(&client->dev, "camera is: RAW-MIPI-SC535M\n");
-			snprintf(mvcam->camera_model, sizeof(mvcam->camera_model), "%s", "MV-MIPI-SC535M");
+			snprintf(mvcam->camera_model, sizeof(mvcam->camera_model), "%s", "RAW-MIPI-SC535M");
 			mvcam->min_width = RAW_SC535M_ROI_W_MIN;
 			mvcam->min_height = RAW_SC535M_ROI_H_MIN;
 			mvcam->lanecap = 0xA;//2lane and 4lane
