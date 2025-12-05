@@ -5,20 +5,22 @@ I2C_ADDR=0x3b;
 
 <<'COMMENT_SAMPLE'
 
+
 ./gx_mipi_i2c.sh -r manufacturer
 ./gx_mipi_i2c.sh -r model
 ./gx_mipi_i2c.sh -r sensorname
+./gx_mipi_i2c.sh -r serialno
 ./gx_mipi_i2c.sh -r version
 ./gx_mipi_i2c.sh -w factoryparam
 ./gx_mipi_i2c.sh -w paramsave
 ./gx_mipi_i2c.sh -w reboot
 ./gx_mipi_i2c.sh -r timestamp
-./gx_mipi_i2c.sh -r serialno
+
 
 ./gx_mipi_i2c.sh -r errcode
 ./gx_mipi_i2c.sh -r fmtcap
 ./gx_mipi_i2c.sh -r readmodecap
-./gx_mipi_i2c.sh -r trgmodecap
+./gx_mipi_i2c.sh -r workmodecap
 ./gx_mipi_i2c.sh -r lanecap
 ./gx_mipi_i2c.sh -r cameramodel0
 ./gx_mipi_i2c.sh -r cameramodel1
@@ -28,10 +30,7 @@ I2C_ADDR=0x3b;
 ./gx_mipi_i2c.sh -r cameramodel5
 ./gx_mipi_i2c.sh -r cameramodel6
 ./gx_mipi_i2c.sh -r cameramodel7
-./gx_mipi_i2c.sh -r trgcycle
 ./gx_mipi_i2c.sh -r temp
-
-
 ./gx_mipi_i2c.sh -r videomodecap
 ./gx_mipi_i2c.sh -r videomodenum
 ./gx_mipi_i2c.sh -r videomodewh1
@@ -53,8 +52,8 @@ I2C_ADDR=0x3b;
 
 ./gx_mipi_i2c.sh -w imgacq
 
-./gx_mipi_i2c.sh -r trgmode
-./gx_mipi_i2c.sh -w trgmode
+./gx_mipi_i2c.sh -r workmode
+./gx_mipi_i2c.sh -w workmode
 
 ./gx_mipi_i2c.sh -w trgsrc
 ./gx_mipi_i2c.sh -r trgsrc
@@ -110,7 +109,7 @@ I2C_ADDR=0x3b;
 ./gx_mipi_i2c.sh -w videomode
 ./gx_mipi_i2c.sh -r videomode
 
-./gx_mipi_i2c.sh -w readmode
+
 ./gx_mipi_i2c.sh -r readmode
 
 ./gx_mipi_i2c.sh -r lanenum
@@ -138,13 +137,14 @@ I2C_ADDR=0x3b;
 ./gx_mipi_i2c.sh -w aemaxtime
 
 ./gx_mipi_i2c.sh -r exptime
-./gx_mipi_i2c.sh -r curgain
 
 ./gx_mipi_i2c.sh -r mgain
 ./gx_mipi_i2c.sh -w mgain
 
-./gx_mipi_i2c.sh -r agmaxgain
-./gx_mipi_i2c.sh -w agmaxgain
+./gx_mipi_i2c.sh -r aemaxgain
+./gx_mipi_i2c.sh -w aemaxgain
+
+./gx_mipi_i2c.sh -r curgain
 
 ./gx_mipi_i2c.sh -r wbmode
 ./gx_mipi_i2c.sh -w wbmode
@@ -168,8 +168,8 @@ I2C_ADDR=0x3b;
 ./gx_mipi_i2c.sh -r aemintime
 ./gx_mipi_i2c.sh -w aemintime
 
-./gx_mipi_i2c.sh -r gamma
-./gx_mipi_i2c.sh -w gamma
+./gx_mipi_i2c.sh -r gamma_index
+./gx_mipi_i2c.sh -w gamma_index
 
 ./gx_mipi_i2c.sh -w antiflicker 1 60
 ./gx_mipi_i2c.sh -r antiflicker
@@ -195,7 +195,20 @@ I2C_ADDR=0x3b;
 ./gx_mipi_i2c.sh -w hue
 ./gx_mipi_i2c.sh -r hue
 
+./gx_mipi_i2c.sh -w slowshutter 1 300
+./gx_mipi_i2c.sh -r slowshutter
 
+./gx_mipi_i2c.sh -w ldc
+./gx_mipi_i2c.sh -r ldc
+
+./gx_mipi_i2c.sh -w lsc
+./gx_mipi_i2c.sh -r lsc
+
+./gx_mipi_i2c.sh -w dehazeparam
+./gx_mipi_i2c.sh -r dehazeparam
+
+./gx_mipi_i2c.sh -w drc
+./gx_mipi_i2c.sh -r drc
 
 ./gx_mipi_i2c.sh -w trgedge
 ./gx_mipi_i2c.sh -r trgedge

@@ -31,19 +31,21 @@
 #include <linux/of_gpio.h>
 
 /*
+	v1.0.2:
+	rename trigger_mode-->work_mode.
 	v1.0.1:
 	support video mode registers.
 	v1.0.0:
 	first release version
 */
 
-#define DRIVER_VERSION			KERNEL_VERSION(1, 0x00, 0x01) 
+#define DRIVER_VERSION			KERNEL_VERSION(1, 0x00, 0x02) 
 
 #define gxcam_NAME			"gxcam"
 
 /* Embedded metadata stream structure */
-#define VEYE_MV_EMBEDDED_LINE_WIDTH 16384
-#define VEYE_MV_NUM_EMBEDDED_LINES 1
+#define VEYE_GX_EMBEDDED_LINE_WIDTH 16384
+#define VEYE_GX_NUM_EMBEDDED_LINES 1
 
 enum pad_types {
 	IMAGE_PAD,
@@ -117,7 +119,7 @@ static s64 link_freq_menu_items[] = {
 enum enum_v4l2_ctrls_index{
     CID_LINK_FREQ,
     CID_PIXEL_RATE,
-	CID_VEYE_GX_TRIGGER_MODE,
+	CID_VEYE_GX_WORK_MODE,
 	CID_VEYE_GX_TRIGGER_SRC,
 	CID_VEYE_GX_SOFT_TRGONE,
 	CID_VEYE_GX_SYNC_ROLE,
@@ -412,20 +414,20 @@ static int gxcam_g_volatile_ctrl(struct v4l2_ctrl *ctrl)
     struct i2c_client *client = gxcam->client;
     
 	switch (ctrl->id) {
-	case V4L2_CID_VEYE_GX_TRIGGER_MODE:
-        ret = gxcam_read_d(client, Trigger_Mode,&ctrl->val);
+	case V4L2_CID_VEYE_GX_WORK_MODE:
+        ret = gxcam_read(client, Work_Mode,&ctrl->val);
 		break;
 	case V4L2_CID_VEYE_GX_TRIGGER_SRC:
-        ret = gxcam_read_d(client, Trigger_Source,&ctrl->val);
+        ret = gxcam_read(client, Trigger_Source,&ctrl->val);
 		break;
 
 	case V4L2_CID_VEYE_GX_FRAME_RATE:
-        ret = gxcam_read_d(client, Framerate_ex,&ctrl->val);
+        ret = gxcam_read(client, Framerate_ex,&ctrl->val);
         ctrl->val = ctrl->val/10000;
         gxcam->cur_fps = ctrl->val;
 		break;
 	case V4L2_CID_VEYE_GX_SYNC_ROLE:
-		ret = gxcam_read_d(client, Sync_Role,&ctrl->val);
+		ret = gxcam_read(client, Sync_Role,&ctrl->val);
 		break;	
 
 	default:
@@ -453,8 +455,8 @@ static int gxcam_s_ctrl(struct v4l2_ctrl *ctrl)
 			 __func__, ctrl->id, ctrl->val);
 	
     switch (ctrl->id) {
-	case V4L2_CID_VEYE_GX_TRIGGER_MODE:
-        ret = gxcam_write(client, Trigger_Mode,ctrl->val);
+	case V4L2_CID_VEYE_GX_WORK_MODE:
+        ret = gxcam_write(client, Work_Mode,ctrl->val);
 		break;
 	case V4L2_CID_VEYE_GX_TRIGGER_SRC:
         ret = gxcam_write(client, Trigger_Source,ctrl->val);
@@ -517,12 +519,12 @@ static struct v4l2_ctrl_config gxcam_v4l2_ctrls[] = {
 	//custom v4l2-ctrls
 	{
 		.ops = &gxcam_ctrl_ops,
-		.id = V4L2_CID_VEYE_GX_TRIGGER_MODE,
+		.id = V4L2_CID_VEYE_GX_WORK_MODE,
 		.name = "trigger_mode",
 		.type = V4L2_CTRL_TYPE_INTEGER,
 		.def = Video_Streaming_mode,
 		.min = 0,
-		.max = Trigger_mode_num-1,
+		.max = Work_mode_num-1,
 		.step = 1,
 		.flags = V4L2_CTRL_FLAG_VOLATILE|V4L2_CTRL_FLAG_EXECUTE_ON_WRITE,
 	},
@@ -574,8 +576,8 @@ static struct v4l2_ctrl_config gxcam_v4l2_ctrls[] = {
 //grab some ctrls while streaming
 static void gxcam_v4l2_ctrl_grab(struct gxcam *gxcam, bool grabbed)
 {
-    if (gxcam->ctrls[CID_VEYE_GX_TRIGGER_MODE])
-        v4l2_ctrl_grab(gxcam->ctrls[CID_VEYE_GX_TRIGGER_MODE], grabbed);
+    if (gxcam->ctrls[CID_VEYE_GX_WORK_MODE])
+        v4l2_ctrl_grab(gxcam->ctrls[CID_VEYE_GX_WORK_MODE], grabbed);
     if (gxcam->ctrls[CID_VEYE_GX_TRIGGER_SRC])
         v4l2_ctrl_grab(gxcam->ctrls[CID_VEYE_GX_TRIGGER_SRC], grabbed);
     if (gxcam->ctrls[CID_VEYE_GX_FRAME_RATE])
@@ -592,8 +594,8 @@ static void gxcam_v4l2_ctrl_init(struct gxcam *gxcam)
     for (i = 0; i < ARRAY_SIZE(gxcam_v4l2_ctrls); ++i) {
 		switch(gxcam_v4l2_ctrls[i].id)
         {
-            case V4L2_CID_VEYE_GX_TRIGGER_MODE:
-				gxcam_read_d(client, Trigger_Mode,&value);
+            case V4L2_CID_VEYE_GX_WORK_MODE:
+				gxcam_read_d(client, Work_Mode,&value);
                 gxcam_v4l2_ctrls[i].def = value;
                 v4l2_dbg(1, debug, gxcam->client, "%s:default trigger mode %d\n", __func__, value);
             break;
@@ -1191,7 +1193,7 @@ static void gxcam_get_mipifeature(struct gxcam *gxcam)
     }else{
         gxcam->lane_num = 2;
     }
-    gxcam_read(client, LaneNum_Cap, &lanenum_cap);
+    gxcam_read_d(client, LaneNum_Cap, &lanenum_cap);
 	if (lanenum_cap <= 0xF)//
 	{
 		gxcam->lanecap = lanenum_cap;

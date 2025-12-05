@@ -17,7 +17,7 @@ Time_stamp=0x0020;
 Error_code=0x0024;
 Format_Cap=0x0028;
 ReadMode_Cap=0x002C;
-TriggerMode_Cap=0x0030;
+WorkMode_Cap=0x0030;
 LaneNum_Cap=0x0034;
 CameraModel0=0x0038;
 CameraModel1=0x003C;
@@ -48,7 +48,7 @@ VidoeMode_WH8=0x009C;
 VideoMode_Param8=0x00A0;
 #0x0400
 Image_Acquisition=0x400;
-Trigger_Mode=0x404;
+Work_Mode=0x404;
 Trigger_Source=0x408;
 Trigger_Num=0x40C;
 Trigger_Inerval=0x410;
@@ -108,7 +108,7 @@ AE_Min_Time=0xC5C;
 Gamma=0xC60;
 Anti_flicker_enable=0xC94;
 Anti_flicker_Freq=0xC98;
-WDR_Enable=0xC9C;
+WDR_Option=0xC9C;
 WDR_strength=0xCA0;
 Sharppen_strength=0xCA4;
 Denoise_strength_2D=0xCA8;
@@ -116,7 +116,13 @@ Denoise_strength_3D=0xCAC;
 Saturation=0xCB0;
 Contrast=0xCB4;
 Hue=0xCB8;
-
+SlowShutter=0xCBC;
+SlowShutter_GainTh=0xCC0;
+LDC=0xCC4;
+LSC=0xCC8;
+Dehaze_strength=0xCCC;
+Gamma_Selection=0xCD0;
+DRC_strength=0xCD4;
 #0x1000
 Trigger_Delay=0x1000;
 Trigger_Activation=0x1004;
@@ -138,14 +144,14 @@ pinmux()
 i2c_read() 
 {
     local reg=$1
-    ./i2c_vread $I2C_DEV $I2C_ADDR $reg 2>/dev/null | tail -n1
+    ./i2c_vread $I2C_DEV $I2C_ADDR "$reg" 2>/dev/null | tail -n1
 }
 
 i2c_write() 
 {
     local reg=$1
     local val=$2
-    ./i2c_vwrite $I2C_DEV $I2C_ADDR $reg $val
+    ./i2c_vwrite $I2C_DEV $I2C_ADDR "$reg" "$val"
 }
 
 read_manufacturer()
@@ -175,7 +181,7 @@ read_model()
             printf "Read Model_Name is GX-MIPI-IMX662\n";
             ;;
         *)
-            printf "model 0x%08X not recognized\n" $model
+            printf "model 0x%08X not recognized\n" "$model"
             return 1
             ;;
     esac
@@ -186,7 +192,7 @@ read_sensorname()
 {
     local model=0;
     typeset -i model;
-    printf "************************************\n";
+    #printf "************************************\n";
 	model=$(i2c_read $Sensor_Name);
     case $model in
     "1634")
@@ -197,7 +203,7 @@ read_sensorname()
      printf " model %8x not recognized\n" $model;
      ;;
     esac
-    printf "************************************\n";
+    #printf "************************************\n";
 }
 
 read_version()
@@ -206,6 +212,7 @@ read_version()
     typeset -i version;
 	version=$(i2c_read $Device_Version);
     printf "Read version is C %02x.%02x and L %02x.%02x\n" $(($version>>24&0xFF)) $(($version>>16 &0xFF)) $(($version>>8&0xFF)) $(($version&0xFF));
+    # shellcheck disable=SC2004
     printf -v VERSION "C_%02x.%02x_L_%02x.%02x" $(($version>>24&0xFF)) $(($version>>16 &0xFF)) $(($version>>8&0xFF)) $(($version&0xFF));
     #printf $VERSION
 }
@@ -214,14 +221,13 @@ write_factoryparam()
 {
     local value
     if [ -n "$1" ]; then
-        # 如果传入了参数，则使用它
         value="$1"
     else
-        # 否则使用默认值 1
+        
         value=1
     fi
 
-    i2c_write $System_reset $value
+    i2c_write $System_reset "$value"
     printf "factoryparam, all param will reset \n";
 }
 
@@ -243,14 +249,14 @@ read_serialno()
     typeset -i serialno;
 	serialno=$(i2c_read $Serial_Num);
     hex_val=$(printf "%08x" $(( serialno & 0xffffffff )))
-    printf "Read Serial_Num is 0x%s\n" $hex_val
+    printf "Read Serial_Num is 0x%s\n" "$hex_val"
 }
 
 write_serialno()
 {
     local res=$1;
 	i2c_write $Serial_Num $res
-    printf "Write Serial_Num is 0x%08x \n" $res;
+    printf "Write Serial_Num is 0x%08x \n" "$res";
 }
 
 
@@ -426,22 +432,22 @@ read_videomodeparam8()
 write_imgacq()
 {
     local acq=$1;
-	i2c_write $Image_Acquisition $acq
-    printf "Write Image_Acquisition is %d \n" $acq;
+	i2c_write $Image_Acquisition "$acq"
+    printf "Write Image_Acquisition is %d \n" "$acq";
 }
 
-read_trgmode()
+read_workmode()
 {
     local value=0;
     typeset -i value;
-	value=$(i2c_read $Trigger_Mode);
-    printf "Read Trigger_Mode is %d \n" $value;
+	value=$(i2c_read $Work_Mode);
+    printf "Read Work_Mode is %d \n" $value;
 }
-write_trgmode()
+write_workmode()
 {
-    local trgmode=$1;
-	i2c_write $Trigger_Mode $trgmode
-    printf "Write  Trigger_Mode is %d \n" $trgmode;
+    local workmode=$1;
+	i2c_write $Work_Mode "$workmode"
+    printf "Write  Work_Mode is %d \n" "$workmode";
 }
 
 read_trgsrc()
@@ -455,8 +461,8 @@ read_trgsrc()
 write_trgsrc()
 {
     local trgsrc=$1;
-	i2c_write $Trigger_Source $trgsrc
-    printf "Write Trigger_Source is %d \n" $trgsrc;
+	i2c_write $Trigger_Source "$trgsrc"
+    printf "Write Trigger_Source is %d \n" "$trgsrc";
 }
 
 read_trgnum()
@@ -470,8 +476,8 @@ read_trgnum()
 write_trgnum()
 {
     local trgnum=$1;
-	i2c_write $Trigger_Num $trgnum
-    printf "Write Trigger_Num is %d \n" $trgnum;
+	i2c_write $Trigger_Num "$trgnum"
+    printf "Write Trigger_Num is %d \n" "$trgnum";
 }
 
 read_trginterval()
@@ -485,8 +491,8 @@ read_trginterval()
 write_trginterval()
 {
     local trginterval=$1;
-	i2c_write $Trigger_Inerval $trginterval
-    printf "Write Trigger_Inerval is %d us \n" $trginterval;
+	i2c_write $Trigger_Inerval "$trginterval"
+    printf "Write Trigger_Inerval is %d us \n" "$trginterval";
 }
 
 write_trgone()
@@ -525,8 +531,8 @@ read_i2caddr()
 write_i2caddr()
 {
     local i2caddr=$1;
-	i2c_write $I2C_Addr $i2caddr
-    printf "Write I2C_Addr is 0x%02x \n" $i2caddr;
+	i2c_write $I2C_Addr "$i2caddr"
+    printf "Write I2C_Addr is 0x%02x \n" "$i2caddr";
 }
 
 read_nondiscontinuousmode()
@@ -540,8 +546,8 @@ read_nondiscontinuousmode()
 write_nondiscontinuousmode()
 {
     local clkmode=$1;
-	i2c_write $Nondiscontinuous_mode $clkmode
-    printf "Write  Nondiscontinuous_mode is %d \n" $clkmode;
+	i2c_write $Nondiscontinuous_mode "$clkmode"
+    printf "Write  Nondiscontinuous_mode is %d \n" "$clkmode";
 }
 
 read_slavemode()
@@ -555,8 +561,8 @@ read_slavemode()
 write_slavemode()
 {
     local slmode=$1;
-	i2c_write $Slave_mode $slmode
-    printf "Write Slave_mode is %d \n" $slmode;
+	i2c_write $Slave_mode "$slmode"
+    printf "Write Slave_mode is %d \n" "$slmode";
 }
 
 
@@ -591,8 +597,8 @@ read_daynightmode()
 write_daynightmode()
 {
     local dnmode=$1;
-    i2c_write $Day_night_mode $dnmode
-    printf "Write Day_night_mode is 0x%x \n" $dnmode;
+    i2c_write $Day_night_mode "$dnmode"
+    printf "Write Day_night_mode is 0x%x \n" "$dnmode";
 }
 
 
@@ -607,8 +613,8 @@ read_ircutdir()
 write_ircutdir()
 {
     local ircutdir=$1;
-    i2c_write $IRCUT_dir $ircutdir
-    printf "Write IRCUT_dir is 0x%x \n" $ircutdir;
+    i2c_write $IRCUT_dir "$ircutdir"
+    printf "Write IRCUT_dir is 0x%x \n" "$ircutdir";
 }
 
 read_pinpolarity()
@@ -622,8 +628,8 @@ read_pinpolarity()
 write_pinpolarity()
 {
     local polarity=$1;
-    i2c_write $Day_night_Trigger_pin_polarity $polarity
-    printf "Write Day_night_Trigger_pin_polarity is 0x%x \n" $polarity;
+    i2c_write $Day_night_Trigger_pin_polarity "$polarity"
+    printf "Write Day_night_Trigger_pin_polarity is 0x%x \n" "$polarity";
 }
 
 read_ircuttimer()
@@ -637,8 +643,8 @@ read_ircuttimer()
 write_ircuttimer()
 {
     local ircuttimer=$1;
-    i2c_write $IRCUT_Timer $ircuttimer
-    printf "Write IRCUT_Timer is 0x%x \n" $ircuttimer;
+    i2c_write $IRCUT_Timer "$ircuttimer"
+    printf "Write IRCUT_Timer is 0x%x \n" "$ircuttimer";
 }
 
 
@@ -652,8 +658,8 @@ read_testimg()
 write_testimg()
 {
     local testimg=$1;
-	i2c_write $Test_Image_Selector $testimg
-    printf "Write Test_Image_Selector is %d \n" $testimg;
+	i2c_write $Test_Image_Selector "$testimg"
+    printf "Write Test_Image_Selector is %d \n" "$testimg";
 }
 
 read_pixelformat()
@@ -666,8 +672,8 @@ read_pixelformat()
 write_pixelformat()
 {
     local piformat=$1;
-	i2c_write $Pixel_Format $piformat
-    printf "Write Pixel_Format is %d \n" $piformat;
+	i2c_write $Pixel_Format "$piformat"
+    printf "Write Pixel_Format is %d \n" "$piformat";
 }
 
 read_maxwh()
@@ -687,14 +693,14 @@ read_maxfps()
     local maxfps=0;
 	value=$(i2c_read $MaxFrame_Rate);
     maxfps=$(awk -v x="$value" 'BEGIN {printf "%.2f\n",x/100}')
-    printf "Read MaxFrame_Rate is %.2f fps\n" $maxfps;
+    printf "Read MaxFrame_Rate is %.2f fps\n" "$maxfps";
 }
 
 
 read_curwh()
 {
-    local x=0;
-    local y=0;
+   # local x=0;
+   # local y=0;
     local width=0;
     local height=0;
   #  typeset -i x;
@@ -706,7 +712,7 @@ read_curwh()
   #  y=$(i2c_read $ROI_Offset_Y);
     width=$(i2c_read $ROI_Width);
     height=$(i2c_read $ROI_Height);
-    printf "ROI_Width is %d,ROI_Height is %d \n" $x $y $width $height;
+    printf "ROI_Width is %d,ROI_Height is %d \n" $width $height;
    # printf "Read ROI_Offset_X is %d, ROI_Offset_Y is %d, ROI_Width is %d,ROI_Height is %d \n" $x $y $width $height;
 }
 
@@ -720,8 +726,8 @@ read_imgdir()
 write_imgdir()
 {
     local imgdir=$1;
-	i2c_write $Image_Direction $imgdir
-    printf "Write Image_Direction is %d \n" $imgdir;
+	i2c_write $Image_Direction "$imgdir"
+    printf "Write Image_Direction is %d \n" "$imgdir";
 }
 
 read_videomode()
@@ -735,8 +741,8 @@ read_videomode()
 write_videomode()
 {
     local value=$1;
-    i2c_write $VideoMode $value
-    printf "Write VideoMode is %d \n" $value;
+    i2c_write $VideoMode "$value"
+    printf "Write VideoMode is %d \n" "$value";
 }
 
 
@@ -748,12 +754,12 @@ read_readmode()
     printf "Read ReadMode is 0x%x \n" $value;
 }
 
-write_readmode()
-{
-    local readmode=$1;
-    i2c_write $ReadMode $readmode
-    printf "Write ReadMode is 0x%x \n" $readmode;
-}
+#write_readmode()
+#{
+ #   local readmode=$1;
+ #   i2c_write $ReadMode $readmode
+ #   printf "Write ReadMode is 0x%x \n" $readmode;
+#}
 
 read_lanenum()
 {
@@ -786,8 +792,8 @@ read_minframerate()
 {
     local minframe=0
     minframe=$(i2c_read $MinFrame_Rate)
-
-    local result=$(echo "scale=3; $minframe / 10000" | bc -l)
+    local result
+    result=$(echo "scale=3; $minframe / 10000" | bc -l)
 
     printf "Read MinFrame_Rate is %.3f fps\n" "$result"
 }
@@ -799,15 +805,15 @@ read_fps()
     typeset -i value;
 	value=$(i2c_read $FrameRate_Ex);
     fps=$(awk -v x="$value" 'BEGIN {printf "%.4f\n",x/10000}')
-    printf "Read FrameRate_Ex is %.02f fps\n" $fps;
+    printf "Read FrameRate_Ex is %.02f fps\n" "$fps";
 }
 write_fps()
 {
     local fps=$1;
     local reg_value=0;
     reg_value=$(awk -v x="$fps" 'BEGIN {printf ("%.0f\n",x*10000)}')
-	i2c_write $FrameRate_Ex $reg_value
-    printf "Write FrameRate_Ex is %.04f fps \n" $fps;
+	i2c_write $FrameRate_Ex "$reg_value"
+    printf "Write FrameRate_Ex is %.04f fps \n" "$fps";
 }
 
 read_expmode()
@@ -820,22 +826,22 @@ read_expmode()
 write_expmode()
 {
     local expmode=$1;
-	i2c_write $Exposure_Mode $expmode
-    printf "Write Exposure_Mode is %d \n" $expmode;
+	i2c_write $Exposure_Mode "$expmode"
+    printf "Write Exposure_Mode is %d \n" "$expmode";
 }
 
-read_aatarget()
+read_aetarget()
 {
     local value=0;
     typeset -i value;
 	value=$(i2c_read $Target_Brightness);
     printf "Read Target_Brightness is %d \n" $value;
 }
-write_aatarget()
+write_aetarget()
 {
-    local aatarget=$1;
-	i2c_write $Target_Brightness $aatarget
-    printf "Write Target_Brightness is %d \n" $aatarget;
+    local aetarget=$1;
+	i2c_write $Target_Brightness "$aetarget"
+    printf "Write Target_Brightness is %d \n" "$aetarget";
 }
 
 read_aestrategy()
@@ -849,8 +855,8 @@ read_aestrategy()
 write_aestrategy()
 {
     local aestrategy=$1;
-	i2c_write $AE_Strategy $aestrategy
-    printf "Write  AE_Strategy is %d  \n" $aestrategy;
+	i2c_write $AE_Strategy "$aestrategy"
+    printf "Write  AE_Strategy is %d  \n" "$aestrategy";
 }
 
 read_metime()
@@ -864,8 +870,8 @@ read_metime()
 write_metime()
 {
     local metime=$1;
-	i2c_write $ME_Time $metime
-    printf "Write manual exp time is %d us \n" $metime;
+	i2c_write $ME_Time "$metime"
+    printf "Write manual exp time is %d us \n" "$metime";
 }
 
 read_aemaxtime()
@@ -878,8 +884,8 @@ read_aemaxtime()
 write_aemaxtime()
 {
     local aemaxtime=$1;
-	i2c_write $AE_MAX_Time $aemaxtime
-    printf "Write AE_MAX_Time is %.3f us\n" $aemaxtime;
+	i2c_write $AE_MAX_Time "$aemaxtime"
+    printf "Write AE_MAX_Time is %.3f us\n" "$aemaxtime";
 }
 
 read_exptime()
@@ -896,7 +902,7 @@ read_mgain()
     local gain=0;
 	value=$(i2c_read $Manual_Gain);
     gain=$(awk -v x="$value" 'BEGIN {printf "%.1f\n",x/10}')
-    printf "Read Manual_Gain is %.1f dB \n" $gain;
+    printf "Read Manual_Gain is %.1f dB \n" "$gain";
 }
 
 write_mgain()
@@ -904,26 +910,26 @@ write_mgain()
     local mgain=$1;
     local reg_value=0;
     reg_value=$(awk -v x="$mgain" 'BEGIN {printf ("%d\n",x*10)}')
-	i2c_write $Manual_Gain $reg_value
+	i2c_write $Manual_Gain "$reg_value"
     printf "Write mgain is %.01f dB (reg: %d)\n" "$mgain" "$reg_value"
 }
 
-read_agmaxgain()
+read_aemaxgain()
 {
     local value=0;
     local gain=0;
 	value=$(i2c_read $AG_Max_Gain);
     gain=$(awk -v x="$value" 'BEGIN {printf "%.1f\n",x/10}')
-    printf "Read AG_Max_Gain is %.1f dB \n" $gain;
+    printf "Read AG_Max_Gain is %.1f dB \n" "$gain";
 }
 
-write_agmaxgain()
+write_aemaxgain()
 {
-    local agmaxgain=$1;
+    local aemaxgain=$1;
     local reg_value=0;
-    reg_value=$(awk -v x="$agmaxgain" 'BEGIN {printf ("%d\n",x*10)}')
-	i2c_write $AG_Max_Gain $reg_value
-    printf "Write AG_Max_Gain is %.1f dB (reg: %d)\n" "$agmaxgain" "$reg_value"
+    reg_value=$(awk -v x="$aemaxgain" 'BEGIN {printf ("%d\n",x*10)}')
+	i2c_write $AG_Max_Gain "$reg_value"
+    printf "Write AG_Max_Gain is %.1f dB (reg: %d)\n" "$aemaxgain" "$reg_value"
 }
 
 read_curgain()
@@ -932,7 +938,7 @@ read_curgain()
     typeset -i value;
 	value=$(i2c_read $Cur_Gain);
     gain=$(awk -v x="$value" 'BEGIN {printf "%.1f\n",x/10}')
-    printf "Read Cur_Gain is %.1f dB \n" $gain;
+    printf "Read Cur_Gain is %.1f dB \n" "$gain";
     
 }
 
@@ -947,8 +953,8 @@ read_wbmode()
 write_wbmode()
 {
     local wbmode=$1;
-    i2c_write $WB_Mode $wbmode
-    printf "Write  WB_Mode is %d  \n" $wbmode;
+    i2c_write $WB_Mode "$wbmode"
+    printf "Write  WB_Mode is %d  \n" "$wbmode";
 }
 
 read_awbcolortempmin()
@@ -962,8 +968,8 @@ read_awbcolortempmin()
 write_awbcolortempmin()
 {
     local value=$1;
-    i2c_write $AWB_Color_temp_min $value
-    printf "Write  AWB_Color_temp_min is %d  \n" $value;
+    i2c_write $AWB_Color_temp_min "$value"
+    printf "Write  AWB_Color_temp_min is %d  \n" "$value";
 }
 
 read_awbcolortempmax()
@@ -978,8 +984,8 @@ read_awbcolortempmax()
 write_awbcolortempmax()
 {
     local value=$1;
-    i2c_write $AWB_Color_temp_max $value
-    printf "Write  AWB_Color_temp_max is %d  \n" $value;
+    i2c_write $AWB_Color_temp_max "$value"
+    printf "Write  AWB_Color_temp_max is %d  \n" "$value";
 
 }
 
@@ -995,8 +1001,8 @@ read_mwbrgain()
 write_mwbrgain()
 {
     local value=$1;
-    i2c_write $MWB_Rgain $value
-    printf "Write  MWB_Rgain is %d  \n" $value;
+    i2c_write $MWB_Rgain "$value"
+    printf "Write  MWB_Rgain is %d  \n" "$value";
 
 }
 
@@ -1012,8 +1018,8 @@ read_mwbbgain()
 write_mwbbgain()
 {
     local value=$1;
-    i2c_write $MWB_Bgain $value;
-    printf "Write  MWB_Bgain is %d  \n" $value;
+    i2c_write $MWB_Bgain "$value";
+    printf "Write  MWB_Bgain is %d  \n" "$value";
 
 }
 
@@ -1031,7 +1037,7 @@ read_currgain()
     local cur_rgain=0;
     typeset -i cur_rgain;
     cur_rgain=$(i2c_read $Cur_Rgain);
-    printf "Read Cur_Rgain is %.1f dB  \n" $cur_rgain;
+    printf "Read Cur_Rgain is %d \n" $cur_rgain;
 }
 
 read_curbgain()
@@ -1039,7 +1045,7 @@ read_curbgain()
     local cur_bgain=0;
     typeset -i cur_bgain;
     cur_bgain=$(i2c_read $Cur_Bgain);
-    printf "Read Cur_Bgain is %.1f dB \n" $cur_bgain;
+    printf "Read Cur_Bgain is %d \n" $cur_bgain;
 }
 
 read_aemintime()
@@ -1052,26 +1058,25 @@ read_aemintime()
 write_aemintime()
 {
     local value=$1;
-	i2c_write $AE_Min_Time $value
-    printf "Write AE_Min_Time is %d us\n" $value;
+	i2c_write $AE_Min_Time "$value"
+    printf "Write AE_Min_Time is %d us\n" "$value";
 }
 
-read_gamma()
+read_gamma_index()
 {
     local value=0;
-    local gamma=0;
-	value=$(i2c_read $Gamma);
-    gamma=$(awk -v x="$value" 'BEGIN {printf "%.2f\n",x/100}')
-    printf "Read Gamma is %.1f \n" $gamma;
+    typeset -i value;
+	value=$(i2c_read $Gamma_Selection);
+    #gamma=$(awk -v x="$value" 'BEGIN {printf "%.2f\n",x/100}')
+    printf "Read Gamma_Selection is %d \n" $value;
 }
 
-write_gamma()
+write_gamma_index()
 {
-    local gamma=$1;
-    local reg_val=0;
-    reg_val=$(awk -v x="$gamma" 'BEGIN {printf ("%.0f\n",x*100)}')
-	i2c_write $Gamma $reg_val
-    printf "Write Gamma %.1f  (reg: %d) \n" $gamma $reg_val;
+    local gamma_index=$1;
+    #reg_val=$(awk -v x="$gamma" 'BEGIN {printf ("%.0f\n",x*100)}')
+	i2c_write $Gamma_Selection "$gamma_index"
+    printf "Write Gamma_Selection %.d  \n" "$gamma_index";
 }
 
 
@@ -1079,9 +1084,9 @@ write_antiflicker()
 {
     local enable=$1;
     local freq=$2;
-    i2c_write $Anti_flicker_enable $enable
-    i2c_write $Anti_flicker_Freq $freq
-    printf "Write  Anti_flicker_enable is %d Anti_flicker_Freq is %d \n" $enable $freq ;
+    i2c_write $Anti_flicker_enable "$enable"
+    i2c_write $Anti_flicker_Freq "$freq"
+    printf "Write  Anti_flicker_enable is %d Anti_flicker_Freq is %d \n" "$enable" "$freq";
 }
 
 read_antiflicker()
@@ -1090,119 +1095,137 @@ read_antiflicker()
     local freq=0;
     enable=$(i2c_read $Anti_flicker_enable);
     freq=$(i2c_read $Anti_flicker_Freq);
-    printf "Read  Anti_flicker_enable is %d  Anti_flicker_Freq is %d  \n" $enable $freq ;
+    printf "Read  Anti_flicker_enable is %d  Anti_flicker_Freq is %d  \n" "$enable" "$freq" ;
 }
 
-#WDR_Enable/WDR_strength
+write_slowshutter()
+{
+    local enable=$1;
+    local gainth=$2;
+    i2c_write $SlowShutter "$enable"
+    i2c_write $SlowShutter_GainTh "$gainth"
+    printf "Write  SlowShutter is %d SlowShutter_GainTh is %d \n" "$enable" "$gainth" ;
+}
+
+read_slowshutter()
+{
+    local enable=0;
+    local gainth=0;
+    enable=$(i2c_read $SlowShutter);
+    gainth=$(i2c_read $SlowShutter_GainTh);
+    printf "Read  SlowShutter is %d  SlowShutter_GainTh is %d  \n" "$enable" " $gainth" ;
+}
+
+#WDR_Option/WDR_strength
 write_wdrparam()
 {
     local enable=$1;
     local strength=$2;
-    i2c_write $WDR_Enable $enable
-    i2c_write $WDR_strength $strength
-    printf "Write  WDR_Enable is %d  WDR_strength is %d \n" $enable $strength;
+    i2c_write $WDR_Option "$enable"
+    i2c_write $WDR_strength "$strength"
+    printf "Write  WDR_Option is %d  WDR_strength is %d \n" "$enable" "$strength";
 }
 
 read_wdrparam()
 {
     local enable=0;
     local strength=0;
-    enable=$(i2c_read $WDR_Enable);
+    enable=$(i2c_read $WDR_Option);
     strength=$(i2c_read $WDR_strength);    
-    printf "Read  WDR_Enable is %d WDR_strength is %d  \n" $enable $strength ;
+    printf "Read  WDR_Option is %d WDR_strength is %d  \n" "$enable" "$strength" ;
 }
 
 #Sharppen_strength
 write_sharppen()
 {
     local sharpen=$1;
-    i2c_write $Sharppen_strength $sharpen
-    printf "Write  Sharppen_strength is %d   \n" $sharpen;
+    i2c_write $Sharppen_strength "$sharpen"
+    printf "Write  Sharppen_strength is %d   \n" "$sharpen";
 }
 
 read_sharppen()
 {
     local sharpen=0;
     sharpen=$(i2c_read $Sharppen_strength);
-    printf "Read  Sharppen_strength is %d   \n" $sharpen;
+    printf "Read  Sharppen_strength is %d   \n" "$sharpen";
 }
 
 #Denoise_strength_2D
 write_denoise_strength_2D()
 {
     local str2D=$1;
-    i2c_write $Denoise_strength_2D $str2D
-    printf "Write Denoise_strength_2D is  %d   \n" $str2D;
+    i2c_write $Denoise_strength_2D "$str2D"
+    printf "Write Denoise_strength_2D is  %d   \n" "$str2D";
 }
 
 read_denoise_strength_2D()
 {
     local res=0;
     res=$(i2c_read $Denoise_strength_2D);
-    printf "Read Denoise_strength_2D is  %d   \n" $res;
+    printf "Read Denoise_strength_2D is  %d   \n" "$res";
 }
 
 #Denoise_strength_3D
 write_denoise_strength_3D()
 {
     local str3D=$1;
-    i2c_write $Denoise_strength_3D $str3D
-    printf "Write  Denoise_strength_3D is %d   \n" $str3D;
+    i2c_write $Denoise_strength_3D "$str3D"
+    printf "Write  Denoise_strength_3D is %d   \n" "$str3D";
 }
 
 read_denoise_strength_3D()
 {
     local res=0;
     res=$(i2c_read $Denoise_strength_3D);
-    printf "Read  Denoise_strength_3D  is %d   \n" $res;
+    printf "Read  Denoise_strength_3D  is %d   \n" "$res";
 }
 #Saturation ,Contrast, Hue
 
 write_saturation()
 {
     local sat=$1;
-    i2c_write $Saturation $sat
-    printf "Write  Satur is %d  \n" $sat;
+    i2c_write $Saturation "$sat"
+    printf "Write  Satur is %d  \n" "$sat";
 }
 read_saturation()
 {
     local Satur=0;
     Satur=$(i2c_read $Saturation);
-    printf "Read  Satur is %d \n" $Satur;
+    printf "Read  Satur is %d \n" "$Satur";
 }
 
 write_contrast()
 {
     local cont=$1;
-    i2c_write $Contrast $cont
-    printf "Write Contrast is %d  \n" $cont;
+    i2c_write $Contrast "$cont"
+    printf "Write Contrast is %d  \n" "$cont";
 }
 read_contrast()
 {
     local Cont=0;
     Cont=$(i2c_read $Contrast);
-    printf "Read  Contrast  is %d \n" $Cont;
+    printf "Read  Contrast  is %d \n" "$Cont";
 }
 
 write_hue()
 {
     local hu=$1;
-    i2c_write $Hue $hu
-    printf "Write  Hue is %d \n" $hu;
+    i2c_write $Hue "$hu"
+    printf "Write  Hue is %d \n" "$hu";
 }
 read_hue()
 {
     local Hu=0;
     Hu=$(i2c_read $Hue);
-    printf "Read  Hue  is %d \n" $Hu;
+    printf "Read  Hue  is %d \n" "$Hu";
 }
 
-read_trgmodecap()
+read_workmodecap()
 {
     local value=0;
     typeset -i value;
-	value=$(i2c_read $TriggerMode_Cap);
-    printf "Read TriggerMode_Cap is 0x%x \n" $value;
+	value=$(i2c_read $WorkMode_Cap);
+    printf "Read WorkMode_Cap is 0x%x \n" $value;
 }
 
 read_lanecap()
@@ -1277,16 +1300,16 @@ read_cameramodel7()
     printf "Read CameraModel7 is 0x%x \n" $cameramodel;
 }
 
-read_trgcycle()
-{
-    local cycle_min=0;
-    local cycle_max=0;
-    typeset -i cycle_min;
-    typeset -i cycle_max;
-	cycle_min=$(i2c_read $Trigger_Cycle_Min);
-    cycle_max=$(i2c_read $Trigger_Cycle_Max);
-    printf "Read Trigger_Cycle_Min is %d us,Trigger_Cycle_Max is %d us\n" $cycle_min $cycle_max;
-}
+#read_trgcycle()
+#{
+ #   local cycle_min=0;
+  #  local cycle_max=0;
+ #   typeset -i cycle_min;
+ #   typeset -i cycle_max;
+#	cycle_min=$(i2c_read $Trigger_Cycle_Min);
+ #   cycle_max=$(i2c_read $Trigger_Cycle_Max);
+ #   printf "Read Trigger_Cycle_Min is %d us,Trigger_Cycle_Max is %d us\n" $cycle_min $cycle_max;
+#}
 
 read_temp()
 {
@@ -1304,7 +1327,7 @@ read_temp()
     celsius=$(echo "scale=2; $kelvin - 273.15" | bc);
 
     # Print temperature values
-    printf "Read temperature is %.2f K (%.2f \u2103)\n" $kelvin $celsius
+    printf "Read temperature is %.2f K (%.2f \u2103)\n" "$kelvin" "$celsius"
 }
 
 read_readmodecap()
@@ -1325,8 +1348,8 @@ read_trgedge()
 write_trgedge()
 {
     local res=$1;
-	i2c_write $Trigger_Activation $res
-    printf "Write Trigger_Activation is %d \n" $res;
+	i2c_write $Trigger_Activation "$res"
+    printf "Write Trigger_Activation is %d \n" "$res";
 }
 
 read_trgdelay()
@@ -1339,8 +1362,8 @@ read_trgdelay()
 write_trgdelay()
 {
     local res=$1;
-	i2c_write $Trigger_Delay $res
-    printf "Write Trigger_Delay is %d \n" $res;
+	i2c_write $Trigger_Delay "$res"
+    printf "Write Trigger_Delay is %d \n" "$res";
 }
 
 read_trgexp_delay()
@@ -1353,8 +1376,8 @@ read_trgexp_delay()
 write_trgexp_delay()
 {
     local res=$1;
-	i2c_write $Exposure_Delay $res
-    printf "Write Exposure_Delay is %d \n" $res;
+	i2c_write $Exposure_Delay "$res"
+    printf "Write Exposure_Delay is %d \n" "$res";
 }
 
 read_outio1_mode()
@@ -1367,8 +1390,8 @@ read_outio1_mode()
 write_outio1_mode()
 {
     local res=$1;
-	i2c_write $GPIO1_OutSelect $res
-    printf "Write GPIO1_OutSelect is %d \n" $res;
+	i2c_write $GPIO1_OutSelect "$res"
+    printf "Write GPIO1_OutSelect is %d \n" "$res";
 }
 
 read_outio1_rvs()
@@ -1381,8 +1404,66 @@ read_outio1_rvs()
 write_outio1_rvs()
 {
     local res=$1;
-	i2c_write $GPIO1_Reverse $res
-    printf "Write GPIO1_Reverse is %d \n" $res;
+	i2c_write $GPIO1_Reverse "$res"
+    printf "Write GPIO1_Reverse is %d \n" "$res";
 }
+
+write_ldc()
+{
+    local ldc=$1;
+    i2c_write $LDC "$ldc"
+    printf "Write  ldc is %d   \n" "$ldc";
+}
+
+read_ldc()
+{
+    local ldc=0;
+    ldc=$(i2c_read $LDC);
+    printf "Read  LDC is %d   \n" "$ldc";
+}
+
+write_lsc()
+{
+    local lsc=$1;
+    i2c_write $LSC "$lsc"
+    printf "Write  lsc is %d   \n" "$lsc";
+}
+
+read_lsc()
+{
+    local lsc=0;
+    lsc=$(i2c_read $LSC);
+    printf "Read  LSC is %d   \n" "$lsc";
+}
+
+#Dehaze_strength
+write_dehazeparam()
+{
+    local strength=$1;
+    i2c_write $Dehaze_strength "$strength"
+    printf "Write  Dehaze_strength is %d \n" "$strength";
+}
+
+read_dehazeparam()
+{
+    local strength=0;
+    strength=$(i2c_read $Dehaze_strength);    
+    printf "Read  Dehaze_strength is %d  \n" "$strength" ;
+}
+
+write_drc()
+{
+    local drc=$1;
+    i2c_write $DRC_strength "$drc"
+    printf "Write  drc is %d   \n" "$drc";
+}
+
+read_drc()
+{
+    local drc=0;
+    drc=$(i2c_read $DRC_strength);
+    printf "Read  DRC_strength is %d   \n" "$drc";
+}
+
 
 
