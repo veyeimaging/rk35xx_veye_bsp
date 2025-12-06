@@ -7,7 +7,7 @@
 # and sets environment variables CAMERAMODEL, FPS, WIDTH, HEIGHT
 # based on files in /sys/bus/i2c/devices/i2c-<bus>/<bus>-003b/veye_gxcam/.
 #
-# Requires mvcam driver v1.1.06 or later.
+# Requires gxcam driver v1.1.06 or later.
 
 if [ "$#" -ne 1 ]; then
     echo "Error: Please provide exactly one argument: the I2C bus number."
@@ -33,6 +33,8 @@ for sub_device in "$i2c_device"/*; do
         if [[ "$sub_device" == *-003b ]]; then
             if [ -d "$sub_device/veye_gxcam" ]; then
                 echo "Found veye_gxcam camera on i2c-${i2c_bus_num}."
+                export I2C_BUS="$i2c_bus_num"
+                echo "Setenv I2C_BUS = $I2C_BUS"
                 found=1
                 # Read and export environment variables
                 for file in camera_model fps width height; do
@@ -63,14 +65,14 @@ for sub_device in "$i2c_device"/*; do
                 done
                 return 0
             else
-                echo "The mvcam driver is loaded on i2c-${i2c_bus_num}, but the camera is not detected!"
+                echo "The gxcam driver is loaded on i2c-${i2c_bus_num}, but the camera is not detected!"
             fi
         fi
     fi
 done
 
 if [ "$found" -eq 0 ]; then
-    echo "No VEYE camera (0x3b) found on i2c-${i2c_bus_num}."
+    echo "No GX camera (0x3b) found on i2c-${i2c_bus_num}."
     echo "The driver may be too old, not loaded, or camera not connected."
     return 1
 fi
