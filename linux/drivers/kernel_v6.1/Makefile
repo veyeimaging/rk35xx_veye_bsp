@@ -290,3 +290,4 @@ obj-$(CONFIG_VIDEO_WM8775) += wm8775.o
 obj-$(CONFIG_VIDEO_XC7160) += xc7160.o
 obj-$(CONFIG_VIDEO_VEYECAM2M) += veyecam2m.o
 obj-$(CONFIG_VIDEO_VEYEMVCAM) += veye_mvcam.o
+obj-$(CONFIG_VIDEO_VEYEGXCAM) += veye_gxcam.o

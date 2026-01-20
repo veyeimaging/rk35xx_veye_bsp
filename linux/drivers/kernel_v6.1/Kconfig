@@ -61,6 +61,13 @@ config VIDEO_VEYEMVCAM
        help
                Driver for veye mv series camera.
                
+config VIDEO_VEYEGXCAM
+       tristate "VEYE GX series camera support."
+       depends on I2C && VIDEO_V4L2 && VIDEO_V4L2_SUBDEV_API
+       depends on MEDIA_CAMERA_SUPPORT
+       help
+               Driver for veye gx series camera.
+			   
 config VIDEO_AR0230
 	tristate "Aptina AR0230 sensor support"
 	depends on I2C && VIDEO_DEV
