@@ -16,3 +16,4 @@ echo "Start MIPI CSI Camera Preview!"
 gst-launch-1.0 v4l2src device=/dev/video0 io-mode=4 ! queue ! video/x-raw,format=NV12,width=${WIDTH},height=${HEIGHT},framerate=30/1  ! $SINK_3588&
 
 wait
+

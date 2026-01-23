@@ -1,5 +1,3 @@
-#!/bin/sh
-
 export DISPLAY=:0.0
 export XAUTHORITY=/home/firefly/.Xauthority
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/aarch64-linux-gnu/gstreamer-1.0
