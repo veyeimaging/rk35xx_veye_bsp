@@ -1810,7 +1810,7 @@ static const struct of_device_id gxcam_of_match[] = {
 	{ .compatible = "veye,gxcam"},
 	{ /* sentinel */ }
 };
-MODULE_DEVICE_TABLE(of, gxcam_of_match);
+MODULE_DEVICE_TABLE(of, veyegx_cam_dt_ids);
 #endif
 
 static const struct i2c_device_id gxcam_match_id[] = {
