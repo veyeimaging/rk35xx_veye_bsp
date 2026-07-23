@@ -15,6 +15,9 @@
 #define POST_READ_HEAD 0xAC
 #define DIR_READ_HEAD 0xDE
 
+#define POST_READSENSOR_HEAD 0x9C
+#define PRE_READSENSOR_HEAD 0x8C
+
 #pragma pack(push, 1)  
 struct preread_regs {
 	uint8_t	pre_head;

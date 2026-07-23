@@ -16,16 +16,34 @@
 static char i2c_device_name[I2C_DEVICE_NAME_LEN];
 
 //common register access
-static int gxcam_readl_reg(int fd, uint8_t i2c_addr, uint16_t reg, uint32_t *val)
+static int gxcam_readl_reg(int fd, uint8_t i2c_addr, uint16_t reg, uint32_t *val, uint32_t reg_type)
 {
 	struct preread_regs regs;
 	uint8_t checksum = 0;
-	uint8_t buf[3] = {POST_READ_HEAD,  reg >> 8, reg & 0xff };
-    uint8_t bufout[8] = {0};
+    	uint8_t bufout[8] = {0};
+	uint8_t buf[3];
 
-	regs.pre_head = PRE_READ_HEAD;
-	regs.reg = htons(reg);
-	regs.xor = xor8((uint8_t *)&regs, 3);
+	if(reg_type == 1)
+	{
+		buf[0] = POST_READSENSOR_HEAD;  
+		regs.pre_head = PRE_READSENSOR_HEAD;
+	}
+	else if(reg_type == 0)
+	{
+		buf[0] = POST_READ_HEAD;
+		regs.pre_head = PRE_READ_HEAD;
+	}
+    else
+	{
+		return -1;
+	}
+
+	buf[1] = reg >> 8;       
+	buf[2] = reg & 0xff;     
+
+
+    regs.reg = htons(reg);
+    regs.xor = xor8((uint8_t *)&regs, 3);
 
 	struct i2c_rdwr_ioctl_data msgset;
 	struct i2c_msg msg = {
@@ -88,8 +106,8 @@ int main(int argc, char *argv[])
 	uint32_t device_addr;
 	uint32_t reg_addr;
 	uint32_t val = 0;
-
-	if (argc < 4)
+    uint32_t reg_type = -1; //0-General-purpose register ; 1-sensor register
+	if (argc < 5)
 	{
 		printf("usage: %s <bus_num> <device address(8bit)> <register address(16bits)> <len default:1 max100>. sample: %s 0x0 0xA0 0x1000 0x2\n", argv[0], argv[0]);
 		return -1;
@@ -113,6 +131,12 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	
+    if(StrToNumber(argv[4], &reg_type) != HI_SUCCESS ) 
+	{
+		printf("Please input reg type like 0x100 0r 256.\r\n");
+		return -1;
+	}
+
 	snprintf(i2c_device_name, sizeof(i2c_device_name), "/dev/i2c-%d", I2C_port);
 
 	int fd;
@@ -128,7 +152,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	
-	if(gxcam_readl_reg(fd, device_addr, reg_addr, &val) < 0)
+	if(gxcam_readl_reg(fd, device_addr, reg_addr, &val, reg_type) < 0)
 	{
 		printf("Read i2c err\n");
 		return -1;

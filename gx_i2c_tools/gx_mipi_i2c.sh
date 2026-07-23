@@ -226,6 +226,17 @@ I2C_ADDR=0x3b;
 ./gx_mipi_i2c.sh -w outio1_rvs
 ./gx_mipi_i2c.sh -r outio1_rvs
 
+./gx_mipi_i2c.sh -w aeweight
+./gx_mipi_i2c.sh -r aeweight
+
+./gx_mipi_i2c.sh -r cur_iso
+
+./gx_mipi_i2c.sh -w metadata_mode
+./gx_mipi_i2c.sh -r metadata_mode
+
+./gx_mipi_i2c.sh -r redriver
+./gx_mipi_i2c.sh -w redriver
+
 COMMENT_SAMPLE
 
 print_usage()
