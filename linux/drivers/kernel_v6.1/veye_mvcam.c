@@ -867,7 +867,8 @@ static int mvcam_get_channel_info(struct mvcam *mvcam, struct rkmodule_channel_i
        if (ch_info->index < PAD0 || ch_info->index >= PAD_MAX)
                return -EINVAL;
        VEYE_TRACE
-       //ch_info->vc = V4L2_MBUS_CSI2_CHANNEL_0;
+    //    ch_info->vc = V4L2_MBUS_CSI2_CHANNEL_0;
+	   ch_info->vc = 0;
        ch_info->width = mvcam->roi.width;
        ch_info->height = mvcam->roi.height;
        current_format = &mvcam->supported_formats[mvcam->current_format_idx];
