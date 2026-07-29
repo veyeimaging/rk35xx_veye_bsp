@@ -30,7 +30,7 @@ I2C_ADDR=0x3b;
 ./gx_mipi_i2c.sh -r cameramodel5
 ./gx_mipi_i2c.sh -r cameramodel6
 ./gx_mipi_i2c.sh -r cameramodel7
-./gx_mipi_i2c.sh -r temp
+
 ./gx_mipi_i2c.sh -r videomodecap
 ./gx_mipi_i2c.sh -r videomodenum
 ./gx_mipi_i2c.sh -r videomodewh1

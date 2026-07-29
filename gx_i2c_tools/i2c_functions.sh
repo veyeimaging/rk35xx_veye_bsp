@@ -1393,24 +1393,24 @@ read_cameramodel7()
  #   printf "Read Trigger_Cycle_Min is %d us,Trigger_Cycle_Max is %d us\n" $cycle_min $cycle_max;
 #}
 
-read_temp()
-{
-    local value=0
-    local kelvin=0
-    local celsius=0
+#read_temp()
+#{
+ #   local value=0
+ #   local kelvin=0
+ #   local celsius=0
 
     # Read temperature value, unit is 100 times Kelvin
-    value=$(i2c_read $Temp_K);
+ #   value=$(i2c_read $Temp_K);
 
     # Calculate the actual Kelvin temperature
-    kelvin=$(echo "scale=2; $value / 100" | bc);
+ #   kelvin=$(echo "scale=2; $value / 100" | bc);
 
     # Calculate Celsius temperature
-    celsius=$(echo "scale=2; $kelvin - 273.15" | bc);
+ #   celsius=$(echo "scale=2; $kelvin - 273.15" | bc);
 
     # Print temperature values
-    printf "Read temperature is %.2f K (%.2f \u2103)\n" "$kelvin" "$celsius"
-}
+#    printf "Read temperature is %.2f K (%.2f \u2103)\n" "$kelvin" "$celsius"
+#}
 
 read_readmodecap()
 {
